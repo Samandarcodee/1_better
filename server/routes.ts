@@ -4,7 +4,47 @@ import { storage } from "./storage";
 import { insertHabitSchema } from "@shared/schema";
 import { z } from "zod";
 
+const BOT_TOKEN = "8300153631:AAFfdf9HexrQn8v1oqj9P93trhDFeIj1MQk";
+const TELEGRAM_API = `https://api.telegram.org/bot${BOT_TOKEN}`;
+
+async function sendMessage(chatId: number, text: string) {
+  try {
+    const response = await fetch(`${TELEGRAM_API}/sendMessage`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        chat_id: chatId,
+        text: text,
+      }),
+    });
+    return await response.json();
+  } catch (error) {
+    console.error("Error sending message:", error);
+    return null;
+  }
+}
+
 export async function registerRoutes(app: Express): Promise<Server> {
+  // Telegram bot webhook
+  app.post("/api/telegram/webhook", async (req, res) => {
+    try {
+      const update = req.body;
+      
+      if (update.message) {
+        const chatId = update.message.chat.id;
+        const text = update.message.text;
+
+        if (text === "/start") {
+          await sendMessage(chatId, "Salom! 👋\n\n1% Better ilovasiga xush kelibsiz!\n\nOdatlarni boshqarish uchun menu tugmasini bosing.");
+        }
+      }
+
+      res.status(200).json({ ok: true });
+    } catch (error) {
+      console.error("Webhook error:", error);
+      res.status(200).json({ ok: true }); // Telegram ga har doim 200 qaytaramiz
+    }
+  });
   app.get("/api/habits", async (req, res) => {
     try {
       const habits = await storage.getAllHabits();

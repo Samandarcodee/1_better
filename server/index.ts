@@ -1,8 +1,22 @@
 import express, { type Request, Response, NextFunction } from "express";
 import { registerRoutes } from "./routes";
 import { setupVite, serveStatic, log } from "./vite";
+import cors from "cors";
 
 const app = express();
+
+// CORS sozlamalari - Telegram Mini App uchun
+app.use(cors({
+  origin: true, // Barcha origin'larga ruxsat
+  credentials: true
+}));
+
+// Telegram Mini App uchun security headers
+app.use((req, res, next) => {
+  res.setHeader('X-Frame-Options', 'ALLOWALL');
+  res.setHeader('Content-Security-Policy', "frame-ancestors *;");
+  next();
+});
 
 declare module 'http' {
   interface IncomingMessage {

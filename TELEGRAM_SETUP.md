@@ -1,104 +1,66 @@
-# Telegram Mini App sozlash qo'llanmasi
+# Telegram Bot Sozlash
 
-## Bot ma'lumotlari
-- **Bot nomi:** 1% Better Ai
-- **Bot username:** @Better_ai_bot
-- **Bot Token:** `8300153631:AAFfdf9HexrQn8v1oqj9P93trhDFeIj1MQk`
+## Bot Ma'lumotlari
 
-## Mini App sozlash bosqichlari
+- **Bot:** @Better_ai_bot
+- **Token:** `8300153631:AAFfdf9HexrQn8v1oqj9P93trhDFeIj1MQk`
 
-### 1. Replit URL ni oling
-Replit loyihangiz ishga tushgandan keyin, URL ni nusxalang:
-```
-https://[your-repl-url].replit.dev
-```
+## Bosqichma-bosqich Sozlash
 
-### 2. BotFather orqali Mini App sozlang
+### 1. Server ishga tushiring
 
-1. Telegram'da [@BotFather](https://t.me/BotFather) botiga o'ting
-2. Botingizni tanlash uchun quyidagi buyruqni yuboring:
-   ```
-   /mybots
-   ```
-3. **1% Better Ai** botini tanlang
-4. **Bot Settings** tugmasini bosing
-5. **Menu Button** ni tanlang
-6. **Configure menu button** ni tanlang
-7. Mini App URL sini kiriting:
-   ```
-   https://[your-repl-url].replit.dev
-   ```
-8. Menu button matni uchun quyidagini kiriting:
-   ```
-   Odatlarni boshqarish
-   ```
-
-### 3. Mini App ishga tushirish
-
-1. Telegram'da @Better_ai_bot ga o'ting
-2. **/start** buyrug'ini yuboring
-3. Pastdagi menu tugmasini bosing yoki botga xabar yozish maydonidagi attachment tugmasidan "Menu" ni tanlang
-4. Mini App ochilib, "1% Better" ilova ishga tushadi!
-
-### 4. Mini App xususiyatlari
-
-✅ **Telegram integratsiyasi:**
-- Telegram ranglari va temasi avtomatik qo'llaniladi
-- Orqaga qaytish tugmasi Telegram'ning BackButton'i orqali ishlaydi
-- Haptik feedback (vibratsiya) qo'shilgan
-- To'liq ekran rejimi
-- Dark/Light mode avtomatik aniqlash
-
-✅ **Funksiyalar:**
-- Odatlarni kuzatish
-- Streak (ketma-ketlik) hisoblash
-- Motivatsion xabarlar
-- Progress monitoring
-- Kunlik bajarilgan vazifalarni belgilash
-
-## Texnik tafsilotlar
-
-### SDK versiyasi
-- @twa-dev/sdk (Telegram WebApp SDK)
-
-### Sozlangan parametrlar
-```typescript
-WebApp.ready()              // Mini App tayyor
-WebApp.expand()             // To'liq ekran
-WebApp.setHeaderColor()     // Sarlavha rangi
-WebApp.setBackgroundColor() // Fon rangi
-WebApp.BackButton          // Orqaga qaytish tugmasi
-WebApp.HapticFeedback      // Vibratsiya feedbacklari
+```bash
+npm install
+npm run dev
 ```
 
-### Haptic Feedback turlari
-- **light** - Odatga bosganda
-- **medium** - "+" tugmasiga bosganda
-- **success** - Odatni bajarganida
-- **light** - O'tkazib yuborish
+Yoki:
+```
+start.bat ni ikki marta bosing
+```
 
-## Muammolarni hal qilish
+Server `http://localhost:5000` da ishga tushadi.
 
-### Mini App ochilmasa:
-1. Replit serveri ishlab turganini tekshiring
-2. URL to'g'ri kiritilganini tekshiring (https:// bilan)
-3. BotFather'da URL ni qayta kiriting
+### 2. Ngrok o'rnating va ishga tushiring
 
-### Orqaga qaytish tugmasi ko'rinmasa:
-- Bu normal - faqat detail va add sahifalarida ko'rinadi
-- Home sahifada yashiringan
+1. [Ngrok yuklab oling](https://ngrok.com/download)
+2. O'rnating
+3. Yangi terminalda:
+   ```bash
+   ngrok http 5000
+   ```
+4. HTTPS URL ni nusxalang (masalan: `https://abc123.ngrok.io`)
 
-### Dark mode ishlamasa:
-- Telegram sozlamalarida Dark mode yoqilganini tekshiring
-- Ilova avtomatik Telegram temasiga moslashadi
+### 3. BotFather da sozlang
 
-## Keyingi qadamlar
+1. [@BotFather](https://t.me/BotFather) ga o'ting
+2. `/mybots` yuboring
+3. **"1% Better Ai"** botini tanlang
+4. **Bot Settings** → **Menu Button** → **Configure menu button**
+5. URL kiriting: `https://abc123.ngrok.io`
+6. Menu matni: `Odatlarni boshqarish`
+7. Saqlang
 
-1. ✅ Bot tokenini xavfsiz saqlang
-2. ✅ Mini App URL ni BotFather'ga kiriting
-3. ✅ Testdan o'tkazing
-4. 🚀 Foydalanuvchilarga ulashing!
+### 4. Webhook sozlang (/start command uchun)
 
----
+1. Ngrok URL ni oling (masalan: `https://abc123.ngrok.io`)
+2. Quyidagi URL ni brauzerda oching yoki curl bilan yuboring:
+   ```
+   https://api.telegram.org/bot8300153631:AAFfdf9HexrQn8v1oqj9P93trhDFeIj1MQk/setWebhook?url=https://abc123.ngrok.io/api/telegram/webhook
+   ```
+3. `{"ok":true,"result":true,"description":"Webhook was set"}` javob qaytishi kerak
 
-**Eslatma:** Bot tokenini hech kimga bermang va ommaviy joyda joylashtirmang!
+### 5. Test qiling
+
+1. [@Better_ai_bot](https://t.me/Better_ai_bot) ga o'ting
+2. `/start` yuboring
+3. **"Salom! 👋"** xabari kelishi kerak
+4. Menu tugmasini bosing
+5. **🎉 Mini App ochiladi!**
+
+## Eslatmalar
+
+- Server va Ngrok ishlayotgan bo'lishi kerak
+- Ngrok URL har safar o'zgaradi
+- HTTPS majburiy (Telegram uchun)
+- Webhook URL ni har safar yangilang (ngrok URL o'zgarganda)
