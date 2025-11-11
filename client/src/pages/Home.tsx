@@ -5,13 +5,20 @@ import { motion } from "framer-motion";
 import { useLocation } from "wouter";
 import { useQuery } from "@tanstack/react-query";
 import type { Habit } from "@shared/schema";
+import { useTelegram } from "@/lib/telegram";
+import { useEffect } from "react";
 
 export default function Home() {
   const [, setLocation] = useLocation();
+  const { webApp } = useTelegram();
 
   const { data: habits = [], isLoading } = useQuery<Habit[]>({
     queryKey: ["/api/habits"],
   });
+
+  useEffect(() => {
+    webApp.BackButton.hide();
+  }, [webApp]);
 
   const calculateProgress = (habit: Habit) => {
     const totalDays = habit.duration;
@@ -78,7 +85,10 @@ export default function Home() {
                   streak={habit.streak}
                   progress={calculateProgress(habit)}
                   completedToday={getTodayStatus(habit)}
-                  onClick={() => setLocation(`/habit/${habit.id}`)}
+                  onClick={() => {
+                    webApp.HapticFeedback.impactOccurred("light");
+                    setLocation(`/habit/${habit.id}`);
+                  }}
                 />
               </motion.div>
             ))
@@ -94,7 +104,10 @@ export default function Home() {
           <Button
             size="lg"
             className="rounded-full w-16 h-16 shadow-lg"
-            onClick={() => setLocation("/add")}
+            onClick={() => {
+              webApp.HapticFeedback.impactOccurred("medium");
+              setLocation("/add");
+            }}
             data-testid="button-add-habit"
           >
             <Plus className="w-6 h-6" />

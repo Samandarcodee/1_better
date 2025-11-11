@@ -74,6 +74,8 @@ export default function HabitDetail() {
   };
 
   const handleComplete = () => {
+    webApp.HapticFeedback.notificationOccurred("success");
+    
     const message =
       motivationalMessages.completed[
         Math.floor(Math.random() * motivationalMessages.completed.length)
@@ -88,6 +90,8 @@ export default function HabitDetail() {
   };
 
   const handleSkip = () => {
+    webApp.HapticFeedback.impactOccurred("light");
+    
     const message =
       motivationalMessages.skipped[
         Math.floor(Math.random() * motivationalMessages.skipped.length)
