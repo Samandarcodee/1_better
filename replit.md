@@ -6,12 +6,13 @@ A minimalist habit tracking application built with the "1% Better" philosophy. U
 **Last Updated:** January 11, 2025
 
 ## Current State
-✅ **MVP Complete** - Fully functional habit tracker with:
+✅ **Telegram Mini App Ready** - Fully functional habit tracker with:
 - Home screen displaying all habits with streak counters and progress bars
 - Detailed habit view with calendar, circular progress, and weekly chart
 - Add habit flow with duration selection and habit type toggle
 - Motivational toast messages in Uzbek for encouragement
 - Complete backend API with in-memory storage
+- **Telegram WebApp SDK integrated** with BackButton, haptic feedback, and theme support
 - Fully tested end-to-end functionality
 
 ## Project Architecture
@@ -22,6 +23,7 @@ A minimalist habit tracking application built with the "1% Better" philosophy. U
 - **Storage:** In-memory (MemStorage) with mock data
 - **Styling:** Tailwind CSS with custom design system
 - **UI Components:** Shadcn/UI with custom habit-specific components
+- **Telegram:** @twa-dev/sdk for Mini App integration
 
 ### Design System
 - **Colors:** 
@@ -117,6 +119,11 @@ shared/
 - Implemented streak calculation logic
 - Added motivational toast messages
 - Created fully functional end-to-end flow
+- **Integrated Telegram Mini App SDK (@twa-dev/sdk)**
+- **Added Telegram BackButton navigation on detail/add pages**
+- **Implemented haptic feedback for all user interactions**
+- **Configured Telegram theme colors and dark mode support**
+- **Created TelegramProvider for WebApp initialization**
 - Tested all user journeys successfully
 
 ## User Preferences
@@ -147,14 +154,28 @@ The app uses gentle, encouraging messages in Uzbek:
 - All dates stored in ISO format (YYYY-MM-DD)
 - Animations powered by Framer Motion for smooth interactions
 
+## Telegram Mini App Setup
+**Bot Details:**
+- Bot: @Better_ai_bot
+- Token: Securely stored (see TELEGRAM_SETUP.md)
+
+**Integration Features:**
+- ✅ Full screen expansion
+- ✅ Telegram BackButton on detail/add pages
+- ✅ Haptic feedback (light/medium/success)
+- ✅ Automatic theme detection (light/dark)
+- ✅ Header and background color matching
+- ✅ Closing confirmation enabled
+
+**Setup Instructions:** See `TELEGRAM_SETUP.md` for complete BotFather configuration guide.
+
 ## Next Steps (Future Enhancements)
 - [ ] Add PostgreSQL database for persistent storage
-- [ ] Implement reminder notifications
+- [ ] Implement Telegram notifications for habit reminders
 - [ ] Add statistics dashboard with overall progress
 - [ ] Implement streak recovery grace period
 - [ ] Add data export/backup functionality
-- [ ] Integrate with Telegram Mini App SDK
-- [ ] Add haptic feedback for mobile
-- [ ] Implement dark mode toggle
 - [ ] Add habit editing capability
 - [ ] Create habit categories/tags
+- [ ] Multi-user support with Telegram user authentication
+- [ ] Habit sharing within Telegram chats
