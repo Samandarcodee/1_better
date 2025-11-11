@@ -11,12 +11,28 @@ import { useToast } from "@/hooks/use-toast";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { queryClient, apiRequest } from "@/lib/queryClient";
 import type { Habit } from "@shared/schema";
+import { useTelegram } from "@/lib/telegram";
 
 export default function HabitDetail() {
   const [, params] = useRoute("/habit/:id");
   const [, setLocation] = useLocation();
   const { toast } = useToast();
   const habitId = params?.id || "";
+  const { webApp } = useTelegram();
+
+  useEffect(() => {
+    webApp.BackButton.show();
+    webApp.BackButton.onClick(() => {
+      setLocation("/");
+    });
+
+    return () => {
+      webApp.BackButton.hide();
+      webApp.BackButton.offClick(() => {
+        setLocation("/");
+      });
+    };
+  }, [webApp, setLocation]);
 
   const { data: habit, isLoading } = useQuery<Habit>({
     queryKey: ["/api/habits", habitId],

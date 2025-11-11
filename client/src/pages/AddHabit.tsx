@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useLocation } from "wouter";
 import { ArrowLeft } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -11,6 +11,7 @@ import { useToast } from "@/hooks/use-toast";
 import { useMutation } from "@tanstack/react-query";
 import { queryClient, apiRequest } from "@/lib/queryClient";
 import type { InsertHabit } from "@shared/schema";
+import { useTelegram } from "@/lib/telegram";
 
 export default function AddHabit() {
   const [, setLocation] = useLocation();
@@ -18,6 +19,21 @@ export default function AddHabit() {
   const [habitName, setHabitName] = useState("");
   const [isGoodHabit, setIsGoodHabit] = useState(true);
   const [duration, setDuration] = useState(21);
+  const { webApp } = useTelegram();
+
+  useEffect(() => {
+    webApp.BackButton.show();
+    webApp.BackButton.onClick(() => {
+      setLocation("/");
+    });
+
+    return () => {
+      webApp.BackButton.hide();
+      webApp.BackButton.offClick(() => {
+        setLocation("/");
+      });
+    };
+  }, [webApp, setLocation]);
 
   const createHabitMutation = useMutation({
     mutationFn: async (data: InsertHabit) => {
