@@ -8,6 +8,9 @@ import { Switch } from "@/components/ui/switch";
 import DurationChips from "@/components/DurationChips";
 import { motion } from "framer-motion";
 import { useToast } from "@/hooks/use-toast";
+import { useMutation } from "@tanstack/react-query";
+import { queryClient, apiRequest } from "@/lib/queryClient";
+import type { InsertHabit } from "@shared/schema";
 
 export default function AddHabit() {
   const [, setLocation] = useLocation();
@@ -15,7 +18,27 @@ export default function AddHabit() {
   const [habitName, setHabitName] = useState("");
   const [isGoodHabit, setIsGoodHabit] = useState(true);
   const [duration, setDuration] = useState(21);
-  const [reminder, setReminder] = useState(false);
+
+  const createHabitMutation = useMutation({
+    mutationFn: async (data: InsertHabit) => {
+      return apiRequest("POST", "/api/habits", data);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/habits"] });
+      toast({
+        description: "Yangi odat qo'shildi! 🎉",
+      });
+      setTimeout(() => {
+        setLocation("/");
+      }, 1000);
+    },
+    onError: () => {
+      toast({
+        description: "Xatolik yuz berdi",
+        variant: "destructive",
+      });
+    },
+  });
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -27,20 +50,11 @@ export default function AddHabit() {
       return;
     }
 
-    console.log({
-      habitName,
+    createHabitMutation.mutate({
+      name: habitName,
       isGoodHabit,
       duration,
-      reminder,
     });
-
-    toast({
-      description: "Yangi odat qo'shildi! 🎉",
-    });
-
-    setTimeout(() => {
-      setLocation("/");
-    }, 1000);
   };
 
   return (
@@ -103,30 +117,14 @@ export default function AddHabit() {
               <DurationChips selected={duration} onSelect={setDuration} />
             </div>
 
-            <div className="flex items-center justify-between p-6 bg-card rounded-lg">
-              <div className="space-y-1">
-                <Label htmlFor="reminder" className="text-base">
-                  Eslatma
-                </Label>
-                <p className="text-sm text-muted-foreground">
-                  Kunlik eslatma yoqish
-                </p>
-              </div>
-              <Switch
-                id="reminder"
-                checked={reminder}
-                onCheckedChange={setReminder}
-                data-testid="switch-reminder"
-              />
-            </div>
-
             <Button
               type="submit"
               size="lg"
               className="w-full text-lg h-14"
+              disabled={createHabitMutation.isPending}
               data-testid="button-start"
             >
-              Boshlash
+              {createHabitMutation.isPending ? "Yuklanmoqda..." : "Boshlash"}
             </Button>
           </form>
         </motion.div>

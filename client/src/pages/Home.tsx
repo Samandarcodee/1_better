@@ -1,43 +1,39 @@
-import { useState } from "react";
 import { Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import HabitCard from "@/components/HabitCard";
 import { motion } from "framer-motion";
 import { useLocation } from "wouter";
+import { useQuery } from "@tanstack/react-query";
+import type { Habit } from "@shared/schema";
 
 export default function Home() {
   const [, setLocation] = useLocation();
 
-  const habits = [
-    {
-      id: 1,
-      name: "Morning Meditation",
-      streak: 12,
-      progress: 40,
-      completedToday: true as boolean | null,
-    },
-    {
-      id: 2,
-      name: "Read 30 Minutes",
-      streak: 7,
-      progress: 23,
-      completedToday: null as boolean | null,
-    },
-    {
-      id: 3,
-      name: "No Social Media",
-      streak: 5,
-      progress: 16,
-      completedToday: false as boolean | null,
-    },
-    {
-      id: 4,
-      name: "Exercise",
-      streak: 21,
-      progress: 70,
-      completedToday: true as boolean | null,
-    },
-  ];
+  const { data: habits = [], isLoading } = useQuery<Habit[]>({
+    queryKey: ["/api/habits"],
+  });
+
+  const calculateProgress = (habit: Habit) => {
+    const totalDays = habit.duration;
+    const completedDays = Object.values(habit.completionData).filter(
+      (v) => v === true
+    ).length;
+    return Math.round((completedDays / totalDays) * 100);
+  };
+
+  const getTodayStatus = (habit: Habit): boolean | null => {
+    const today = new Date().toISOString().split("T")[0];
+    const status = habit.completionData[today];
+    return status === undefined ? null : status;
+  };
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <div className="text-muted-foreground">Loading...</div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-background pb-24" data-testid="page-home">
@@ -62,19 +58,31 @@ export default function Home() {
           transition={{ delay: 0.2, duration: 0.5 }}
           className="space-y-4"
         >
-          {habits.map((habit, index) => (
-            <motion.div
-              key={habit.id}
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.1 * index, duration: 0.3 }}
-            >
-              <HabitCard
-                {...habit}
-                onClick={() => setLocation(`/habit/${habit.id}`)}
-              />
-            </motion.div>
-          ))}
+          {habits.length === 0 ? (
+            <div className="text-center py-12">
+              <p className="text-muted-foreground mb-4">
+                Hali odatlar yo'q. Birinchi odatingizni qo'shing!
+              </p>
+            </div>
+          ) : (
+            habits.map((habit, index) => (
+              <motion.div
+                key={habit.id}
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.1 * index, duration: 0.3 }}
+              >
+                <HabitCard
+                  id={parseInt(habit.id) || 0}
+                  name={habit.name}
+                  streak={habit.streak}
+                  progress={calculateProgress(habit)}
+                  completedToday={getTodayStatus(habit)}
+                  onClick={() => setLocation(`/habit/${habit.id}`)}
+                />
+              </motion.div>
+            ))
+          )}
         </motion.div>
 
         <motion.div

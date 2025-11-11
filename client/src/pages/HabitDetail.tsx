@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRoute, useLocation } from "wouter";
 import { ArrowLeft, Check, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -8,53 +8,41 @@ import HabitCalendar from "@/components/HabitCalendar";
 import MiniLineChart from "@/components/MiniLineChart";
 import { motion } from "framer-motion";
 import { useToast } from "@/hooks/use-toast";
+import { useQuery, useMutation } from "@tanstack/react-query";
+import { queryClient, apiRequest } from "@/lib/queryClient";
+import type { Habit } from "@shared/schema";
 
 export default function HabitDetail() {
   const [, params] = useRoute("/habit/:id");
   const [, setLocation] = useLocation();
   const { toast } = useToast();
-  const [completedToday, setCompletedToday] = useState<boolean | null>(null);
+  const habitId = params?.id || "";
 
-  const habitData = {
-    id: params?.id || "1",
-    name: "Morning Meditation",
-    streak: 12,
-    progress: 40,
+  const { data: habit, isLoading } = useQuery<Habit>({
+    queryKey: ["/api/habits", habitId],
+    enabled: !!habitId,
+  });
+
+  const markDayMutation = useMutation({
+    mutationFn: async (completed: boolean) => {
+      const today = new Date().toISOString().split("T")[0];
+      return apiRequest("POST", `/api/habits/${habitId}/mark`, {
+        date: today,
+        completed,
+      });
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/habits", habitId] });
+      queryClient.invalidateQueries({ queryKey: ["/api/habits"] });
+    },
+  });
+
+  const getTodayStatus = (): boolean | null => {
+    if (!habit) return null;
+    const today = new Date().toISOString().split("T")[0];
+    const status = habit.completionData[today];
+    return status === undefined ? null : status;
   };
-
-  const calendarDays = [
-    { date: 1, status: "completed" as const },
-    { date: 2, status: "completed" as const },
-    { date: 3, status: "missed" as const },
-    { date: 4, status: "completed" as const },
-    { date: 5, status: "completed" as const },
-    { date: 6, status: "completed" as const },
-    { date: 7, status: "missed" as const },
-    { date: 8, status: "completed" as const },
-    { date: 9, status: "completed" as const },
-    { date: 10, status: "completed" as const },
-    { date: 11, status: "completed" as const },
-    { date: 12, status: "completed" as const },
-    { date: 13, status: "missed" as const },
-    { date: 14, status: "today" as const },
-    { date: 15, status: "future" as const },
-    { date: 16, status: "future" as const },
-    { date: 17, status: "future" as const },
-    { date: 18, status: "future" as const },
-    { date: 19, status: "future" as const },
-    { date: 20, status: "future" as const },
-    { date: 21, status: "future" as const },
-  ];
-
-  const chartData = [
-    { day: "Mon", value: 60 },
-    { day: "Tue", value: 80 },
-    { day: "Wed", value: 70 },
-    { day: "Thu", value: 90 },
-    { day: "Fri", value: 85 },
-    { day: "Sat", value: 95 },
-    { day: "Sun", value: 100 },
-  ];
 
   const motivationalMessages = {
     completed: [
@@ -70,11 +58,13 @@ export default function HabitDetail() {
   };
 
   const handleComplete = () => {
-    setCompletedToday(true);
     const message =
       motivationalMessages.completed[
         Math.floor(Math.random() * motivationalMessages.completed.length)
       ];
+    
+    markDayMutation.mutate(true);
+    
     toast({
       description: message,
       duration: 3000,
@@ -82,16 +72,94 @@ export default function HabitDetail() {
   };
 
   const handleSkip = () => {
-    setCompletedToday(false);
     const message =
       motivationalMessages.skipped[
         Math.floor(Math.random() * motivationalMessages.skipped.length)
       ];
+    
+    markDayMutation.mutate(false);
+    
     toast({
       description: message,
       duration: 3000,
     });
   };
+
+  const getCalendarDays = () => {
+    if (!habit) return [];
+
+    const days = [];
+    const today = new Date();
+    const startDate = new Date(habit.startDate);
+    
+    const daysSinceStart = Math.floor(
+      (today.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24)
+    );
+
+    const daysToShow = Math.min(daysSinceStart + 7, habit.duration);
+
+    for (let i = 0; i < daysToShow; i++) {
+      const date = new Date(startDate);
+      date.setDate(date.getDate() + i);
+      const dateStr = date.toISOString().split("T")[0];
+      const todayStr = today.toISOString().split("T")[0];
+
+      let status: "completed" | "missed" | "future" | "today";
+      
+      if (dateStr === todayStr) {
+        status = "today";
+      } else if (date > today) {
+        status = "future";
+      } else {
+        status = habit.completionData[dateStr] === true ? "completed" : "missed";
+      }
+
+      days.push({
+        date: date.getDate(),
+        status,
+      });
+    }
+
+    return days;
+  };
+
+  const getWeeklyProgress = () => {
+    if (!habit) return [];
+
+    const weekDays = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
+    const data = weekDays.map((day, index) => {
+      const date = new Date();
+      date.setDate(date.getDate() - (6 - index));
+      const dateStr = date.toISOString().split("T")[0];
+      
+      const completed = habit.completionData[dateStr] === true;
+      return {
+        day,
+        value: completed ? 100 : 0,
+      };
+    });
+
+    return data;
+  };
+
+  const calculateProgress = () => {
+    if (!habit) return 0;
+    const totalDays = habit.duration;
+    const completedDays = Object.values(habit.completionData).filter(
+      (v) => v === true
+    ).length;
+    return Math.round((completedDays / totalDays) * 100);
+  };
+
+  if (isLoading || !habit) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <div className="text-muted-foreground">Loading...</div>
+      </div>
+    );
+  }
+
+  const completedToday = getTodayStatus();
 
   return (
     <div className="min-h-screen bg-background" data-testid="page-habit-detail">
@@ -112,20 +180,20 @@ export default function HabitDetail() {
           transition={{ duration: 0.4 }}
         >
           <h2 className="text-2xl font-semibold text-center mb-8 text-foreground" data-testid="text-habit-name">
-            {habitData.name}
+            {habit.name}
           </h2>
 
-          <StreakCounter streak={habitData.streak} />
+          <StreakCounter streak={habit.streak} />
 
           <div className="flex justify-center my-8">
-            <CircularProgress percentage={habitData.progress} size={140} />
+            <CircularProgress percentage={calculateProgress()} size={140} />
           </div>
 
           <div className="my-8">
             <h3 className="text-lg font-semibold mb-4 text-foreground" data-testid="text-calendar-heading">
               Calendar
             </h3>
-            <HabitCalendar days={calendarDays} />
+            <HabitCalendar days={getCalendarDays()} />
           </div>
 
           <div className="flex gap-4 my-8">
@@ -133,7 +201,7 @@ export default function HabitDetail() {
               size="lg"
               className="flex-1 gap-2"
               onClick={handleComplete}
-              disabled={completedToday === true}
+              disabled={completedToday === true || markDayMutation.isPending}
               data-testid="button-complete"
             >
               <Check className="w-5 h-5" />
@@ -144,7 +212,7 @@ export default function HabitDetail() {
               variant="outline"
               className="flex-1 gap-2"
               onClick={handleSkip}
-              disabled={completedToday === false}
+              disabled={completedToday === false || markDayMutation.isPending}
               data-testid="button-skip"
             >
               <X className="w-5 h-5" />
@@ -156,7 +224,7 @@ export default function HabitDetail() {
             <h3 className="text-lg font-semibold mb-4 text-foreground" data-testid="text-chart-heading">
               Haftalik Progress
             </h3>
-            <MiniLineChart data={chartData} />
+            <MiniLineChart data={getWeeklyProgress()} />
           </div>
         </motion.div>
       </div>
