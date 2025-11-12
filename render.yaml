@@ -13,6 +13,8 @@ services:
           type: web
           name: betterhabit
           property: port
+      - key: WEB_APP_URL
+        value: https://one-better.onrender.com
     # Agar database kerak bo'lsa, quyidagi qatorlarni oching:
     # - key: DATABASE_URL
     #   fromDatabase:
