@@ -210,11 +210,13 @@ export default function HabitDetail() {
           </div>
 
           {/* Streak Counter */}
-          <StreakCounter streak={habit.streak} />
+          <div className="mb-6">
+            <StreakCounter streak={habit.streak} />
+          </div>
 
           {/* Circular Progress with card and stats */}
           <motion.div 
-            className="flex justify-center my-8"
+            className="flex justify-center mb-8"
             initial={{ scale: 0.8, opacity: 0 }}
             animate={{ scale: 1, opacity: 1 }}
             transition={{ delay: 0.2, duration: 0.5 }}
