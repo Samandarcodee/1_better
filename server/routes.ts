@@ -1,8 +1,11 @@
 import type { Express, Request, Response, NextFunction } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
-import { insertHabitSchema } from "@shared/schema";
+import { insertHabitSchema, userSettings } from "@shared/schema";
 import { z } from "zod";
+import { drizzle } from "drizzle-orm/neon-http";
+import { neon } from "@neondatabase/serverless";
+import { eq } from "drizzle-orm";
 
 // Telegram user ID'ni olish uchun middleware
 function getUserId(req: Request): string | null {
@@ -56,6 +59,7 @@ async function sendMessage(chatId: number, text: string, webAppUrl?: string) {
     const body: any = {
       chat_id: chatId,
       text: text,
+      parse_mode: "HTML",
     };
 
     // Agar webAppUrl berilsa, inline keyboard qo'shamiz
@@ -104,15 +108,133 @@ export async function registerRoutes(app: Express): Promise<Server> {
         const text = update.message.text;
         console.log(`💬 Message from ${chatId}: ${text}`);
 
+        const userId = update.message.from.id.toString();
+
+        // Initialize database
+        const databaseUrl = process.env.DATABASE_URL;
+        if (!databaseUrl) {
+          throw new Error("DATABASE_URL not set");
+        }
+        const sql = neon(databaseUrl);
+        const db = drizzle(sql);
+
         if (text === "/start") {
+          // Create or update user settings
+          try {
+            await db.insert(userSettings).values({
+              userId,
+              chatId: chatId.toString(),
+              notificationsEnabled: true,
+            }).onConflictDoUpdate({
+              target: userSettings.userId,
+              set: {
+                chatId: chatId.toString(),
+              },
+            });
+          } catch (error) {
+            console.error("Error creating user settings:", error);
+          }
+
           const webAppUrl = process.env.WEB_APP_URL || "https://one-better.onrender.com";
-          const result = await sendMessage(
-            chatId,
-            "Salom! 👋\n\n1% Better ilovasiga xush kelibsiz!\n\nOdatlarni boshqarish uchun quyidagi tugmani bosing yoki menu tugmasidan foydalaning.",
-            webAppUrl
-          );
-          console.log("✅ Start message sent:", result);
-        } else {
+          const message = `Salom! 👋
+
+1% Better ilovasiga xush kelibsiz!
+
+Odatlarni boshqarish uchun quyidagi tugmani bosing yoki menu tugmasidan foydalaning.
+
+<b>Mavjud buyruqlar:</b>
+/today - Bugungi status
+/remind - Eslatma sozlamalari
+/stats - Statistika
+/help - Yordam`;
+
+          await sendMessage(chatId, message, webAppUrl);
+        } 
+        
+        else if (text === "/today") {
+          const userHabits = await storage.getAllHabits(userId);
+          if (userHabits.length === 0) {
+            await sendMessage(chatId, "❌ Sizda hali odatlar yo'q. Ilova orqali birinchi odatingizni qo'shing!");
+            res.status(200).json({ ok: true });
+            return;
+          }
+
+          const today = new Date().toISOString().split("T")[0];
+          let message = "📊 <b>Bugungi holat:</b>\n\n";
+
+          userHabits.forEach((habit) => {
+            const completed = habit.completionData[today] === true;
+            const icon = completed ? "✅" : "⏳";
+            message += `${icon} <b>${habit.name}</b>\n`;
+            message += `   🔥 Streak: ${habit.streak} kun\n\n`;
+          });
+
+          const completedCount = userHabits.filter(h => h.completionData[today] === true).length;
+          message += `\n📈 Bugun: ${completedCount}/${userHabits.length} bajarildi`;
+
+          await sendMessage(chatId, message);
+        }
+        
+        else if (text === "/stats") {
+          const userHabits = await storage.getAllHabits(userId);
+          if (userHabits.length === 0) {
+            await sendMessage(chatId, "❌ Sizda hali odatlar yo'q.");
+            res.status(200).json({ ok: true });
+            return;
+          }
+
+          let message = "📊 <b>Statistika:</b>\n\n";
+          let totalStreak = 0;
+          let totalCompleted = 0;
+
+          userHabits.forEach((habit) => {
+            const completed = Object.values(habit.completionData).filter(v => v === true).length;
+            const percentage = Math.round((completed / habit.duration) * 100);
+            
+            message += `📌 <b>${habit.name}</b>\n`;
+            message += `   🔥 Streak: ${habit.streak} kun\n`;
+            message += `   ✅ Bajarildi: ${completed}/${habit.duration} (${percentage}%)\n\n`;
+            
+            totalStreak += habit.streak;
+            totalCompleted += completed;
+          });
+
+          message += `\n<b>Umumiy:</b>\n`;
+          message += `📈 Jami odatlar: ${userHabits.length}\n`;
+          message += `🔥 O'rtacha streak: ${Math.round(totalStreak / userHabits.length)} kun\n`;
+          message += `✅ Jami bajarilgan: ${totalCompleted} kun`;
+
+          await sendMessage(chatId, message);
+        }
+        
+        else if (text.startsWith("/remind")) {
+          const helpMessage = `⏰ <b>Eslatma sozlamalari</b>
+
+Eslatma o'rnatish uchun ilovani oching va har bir odat uchun eslatma vaqtini sozlang.
+
+<i>Tez orada /remind 09:00 kabi buyruq ham qo'shiladi!</i>`;
+          
+          await sendMessage(chatId, helpMessage);
+        }
+        
+        else if (text === "/help") {
+          const helpMessage = `ℹ️ <b>Yordam</b>
+
+<b>Mavjud buyruqlar:</b>
+
+/start - Botni ishga tushirish
+/today - Bugungi odatlar holati
+/stats - Batafsil statistika
+/remind - Eslatma sozlamalari
+/help - Bu yordam xabari
+
+<b>Mini App:</b>
+Pastdagi menu tugmasini bosing yoki /start buyrug'idagi tugmani bosing.`;
+          
+          await sendMessage(chatId, helpMessage);
+        }
+        
+        else {
           console.log("ℹ️ Unknown command:", text);
         }
       } else {
