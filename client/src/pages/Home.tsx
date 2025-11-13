@@ -37,7 +37,7 @@ export default function Home() {
   if (isLoading) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
-        <div className="text-muted-foreground">Loading...</div>
+        <div className="text-muted-foreground">Yuklanmoqda...</div>
       </div>
     );
   }

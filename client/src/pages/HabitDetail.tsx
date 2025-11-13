@@ -212,21 +212,63 @@ export default function HabitDetail() {
           {/* Streak Counter */}
           <StreakCounter streak={habit.streak} />
 
-          {/* Circular Progress with card */}
+          {/* Circular Progress with card and stats */}
           <motion.div 
             className="flex justify-center my-8"
             initial={{ scale: 0.8, opacity: 0 }}
             animate={{ scale: 1, opacity: 1 }}
             transition={{ delay: 0.2, duration: 0.5 }}
           >
-            <div className="bg-card border rounded-2xl p-6 shadow-lg">
+            <div className="bg-card border rounded-2xl p-6 shadow-lg w-full max-w-md">
+              <h3 className="text-center text-sm font-semibold text-muted-foreground mb-4">
+                UMUMIY PROGRESS
+              </h3>
               <CircularProgress percentage={calculateProgress()} size={160} />
+              
+              {/* Stats below progress */}
+              <div className="mt-6 grid grid-cols-2 gap-4 text-center">
+                <div className="bg-muted/50 rounded-lg p-3">
+                  <div className="text-2xl font-bold text-green-600 dark:text-green-400">
+                    {Object.values(habit.completionData).filter(v => v === true).length}
+                  </div>
+                  <div className="text-xs text-muted-foreground mt-1">
+                    Bajarilgan kunlar
+                  </div>
+                </div>
+                <div className="bg-muted/50 rounded-lg p-3">
+                  <div className="text-2xl font-bold text-primary">
+                    {habit.duration}
+                  </div>
+                  <div className="text-xs text-muted-foreground mt-1">
+                    Jami kunlar
+                  </div>
+                </div>
+              </div>
+
+              {/* Progress bar visualization */}
+              <div className="mt-4">
+                <div className="flex justify-between text-xs text-muted-foreground mb-2">
+                  <span>Boshlanish</span>
+                  <span>Yakunlanish</span>
+                </div>
+                <div className="w-full h-3 bg-muted rounded-full overflow-hidden">
+                  <motion.div
+                    className="h-full bg-gradient-to-r from-primary to-primary/70 rounded-full"
+                    initial={{ width: 0 }}
+                    animate={{ width: `${calculateProgress()}%` }}
+                    transition={{ duration: 1.5, ease: "easeOut" }}
+                  />
+                </div>
+                <div className="text-center mt-2 text-sm font-medium text-muted-foreground">
+                  {Object.values(habit.completionData).filter(v => v === true).length} / {habit.duration} kun bajarildi
+                </div>
+              </div>
             </div>
           </motion.div>
 
           <div className="my-8">
             <h3 className="text-lg font-semibold mb-4 text-foreground" data-testid="text-calendar-heading">
-              Calendar
+              📅 Kalendar
             </h3>
             <HabitCalendar days={getCalendarDays()} />
           </div>
@@ -289,7 +331,7 @@ export default function HabitDetail() {
 
           <div className="mt-8">
             <h3 className="text-lg font-semibold mb-4 text-foreground" data-testid="text-chart-heading">
-              Haftalik Progress
+              📊 Haftalik Progress
             </h3>
             <MiniLineChart data={getWeeklyProgress()} />
           </div>
