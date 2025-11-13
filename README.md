@@ -16,15 +16,37 @@ Telegram Mini App orqali odatlarni kuzatish ilovasi.
 npm install
 ```
 
+### Environment Variables (.env)
+
+Loyiha ildizida `.env` fayl yarating:
+
+```env
+DATABASE_URL=postgresql://neondb_owner:npg_c4Ihv9jBLuEP@ep-plain-sound-ab39we88-pooler.eu-west-2.aws.neon.tech/neondb?sslmode=require&channel_binding=require
+NODE_ENV=development
+PORT=5000
+```
+
+**Windows PowerShell'da:**
+```powershell
+notepad .env
+```
+
+Keyin yuqoridagi kontentni qo'shing va saqlang.
+
+Batafsil: [LOCAL_SETUP.md](./LOCAL_SETUP.md)
+
 ### Development server
 
 ```bash
 npm run dev
 ```
 
-Server `http://localhost:5000` da ishga tushadi.
+**Windows uchun:**
+```bash
+npm run dev:win
+```
 
-**Windows uchun:** `npm run dev:win` buyrug'ini ishlating.
+Server `http://localhost:5000` da ishga tushadi.
 
 ## Render'ga Deploy Qilish
 
@@ -89,20 +111,31 @@ Agar `render.yaml` faylidan foydalanmoqchi bo'lsangiz:
 - ✅ Progress bar
 - ✅ Kalendar ko'rinishi
 - ✅ Telegram Mini App integratsiyasi
+- ✅ **Foydalanuvchi autentifikatsiyasi (Telegram ID)**
+- ✅ **Har bir user o'z ma'lumotlarini ko'radi**
 
 ## Telegram Bot
 
 - **Bot:** @Better_ai_bot
 - **Token:** `8300153631:AAFfdf9HexrQn8v1oqj9P93trhDFeIj1MQk`
 
+### Bot ishlamayapti?
+
+**Tezkor yechim:** [FIX_TELEGRAM_BOT.md](./FIX_TELEGRAM_BOT.md) - 3 qadamda hal qiling!
+
+Batafsil: [TELEGRAM_SETUP.md](./TELEGRAM_SETUP.md) | [BOT_DIAGNOSTIC.md](./BOT_DIAGNOSTIC.md)
+
 ## API Endpoints
 
-- `GET /api/habits` - Barcha odatlarni olish
-- `GET /api/habits/:id` - Bitta odatni olish
+**Eslatma:** Barcha endpoints Telegram user ID bilan himoyalangan (requireAuth middleware)
+
+- `GET /api/habits` - Foydalanuvchining odatlarini olish
+- `GET /api/habits/:id` - Bitta odatni olish (faqat o'ziniki)
 - `POST /api/habits` - Yangi odat qo'shish
-- `PATCH /api/habits/:id` - Odatni yangilash
-- `DELETE /api/habits/:id` - Odatni o'chirish
-- `POST /api/habits/:id/mark` - Kunlik bajarilganligini belgilash
+- `PATCH /api/habits/:id` - Odatni yangilash (faqat o'ziniki)
+- `DELETE /api/habits/:id` - Odatni o'chirish (faqat o'ziniki)
+- `POST /api/habits/:id/mark` - Kunlik belgilash (faqat o'ziniki)
+- `POST /api/telegram/webhook` - Telegram bot webhook
 
 ## Loyiha tuzilmasi
 

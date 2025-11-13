@@ -4,6 +4,8 @@ import WebApp from "@twa-dev/sdk";
 interface TelegramContextType {
   webApp: typeof WebApp;
   user: typeof WebApp.initDataUnsafe.user | undefined;
+  userId: string | undefined;
+  initData: string;
 }
 
 const TelegramContext = createContext<TelegramContextType | null>(null);
@@ -28,6 +30,8 @@ export function TelegramProvider({ children }: { children: ReactNode }) {
   const value: TelegramContextType = {
     webApp: WebApp,
     user: WebApp.initDataUnsafe.user,
+    userId: WebApp.initDataUnsafe.user?.id?.toString(),
+    initData: WebApp.initData,
   };
 
   return (
@@ -40,9 +44,13 @@ export function TelegramProvider({ children }: { children: ReactNode }) {
 export function useTelegram() {
   const context = useContext(TelegramContext);
   if (!context) {
+    // Development fallback - test user
+    const testUserId = import.meta.env.DEV ? "123456789" : undefined;
     return {
       webApp: WebApp,
       user: undefined,
+      userId: testUserId,
+      initData: "",
     };
   }
   return context;
