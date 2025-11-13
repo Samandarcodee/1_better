@@ -199,15 +199,30 @@ export default function HabitDetail() {
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.4 }}
         >
-          <h2 className="text-2xl font-semibold text-center mb-8 text-foreground" data-testid="text-habit-name">
-            {habit.name}
-          </h2>
+          {/* Habit Name with emoji */}
+          <div className="text-center mb-6">
+            <h2 className="text-3xl font-bold text-foreground mb-2" data-testid="text-habit-name">
+              {habit.name}
+            </h2>
+            <p className="text-sm text-muted-foreground">
+              {habit.duration} kunlik sayohat
+            </p>
+          </div>
 
+          {/* Streak Counter */}
           <StreakCounter streak={habit.streak} />
 
-          <div className="flex justify-center my-8">
-            <CircularProgress percentage={calculateProgress()} size={140} />
-          </div>
+          {/* Circular Progress with card */}
+          <motion.div 
+            className="flex justify-center my-8"
+            initial={{ scale: 0.8, opacity: 0 }}
+            animate={{ scale: 1, opacity: 1 }}
+            transition={{ delay: 0.2, duration: 0.5 }}
+          >
+            <div className="bg-card border rounded-2xl p-6 shadow-lg">
+              <CircularProgress percentage={calculateProgress()} size={160} />
+            </div>
+          </motion.div>
 
           <div className="my-8">
             <h3 className="text-lg font-semibold mb-4 text-foreground" data-testid="text-calendar-heading">
@@ -216,29 +231,61 @@ export default function HabitDetail() {
             <HabitCalendar days={getCalendarDays()} />
           </div>
 
-          <div className="flex gap-4 my-8">
-            <Button
-              size="lg"
-              className="flex-1 gap-2"
-              onClick={handleComplete}
-              disabled={completedToday === true || markDayMutation.isPending}
-              data-testid="button-complete"
-            >
-              <Check className="w-5 h-5" />
-              Bajarildi
-            </Button>
-            <Button
-              size="lg"
-              variant="outline"
-              className="flex-1 gap-2"
-              onClick={handleSkip}
-              disabled={completedToday === false || markDayMutation.isPending}
-              data-testid="button-skip"
-            >
-              <X className="w-5 h-5" />
-              O'tkazib yuborish
-            </Button>
-          </div>
+          {/* Action Buttons with better styling */}
+          <motion.div 
+            className="flex flex-col gap-3 my-8"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.4 }}
+          >
+            {completedToday === null && (
+              <div className="text-center mb-2">
+                <p className="text-sm font-medium text-muted-foreground">
+                  Bugun odatni bajardingizmi?
+                </p>
+              </div>
+            )}
+
+            {completedToday === true && (
+              <div className="text-center mb-2 p-4 bg-green-50 dark:bg-green-950 rounded-lg border border-green-200 dark:border-green-900">
+                <p className="text-sm font-semibold text-green-700 dark:text-green-400">
+                  ✅ Bugun bajarildi! Ajoyib!
+                </p>
+              </div>
+            )}
+
+            {completedToday === false && (
+              <div className="text-center mb-2 p-4 bg-orange-50 dark:bg-orange-950 rounded-lg border border-orange-200 dark:border-orange-900">
+                <p className="text-sm font-semibold text-orange-700 dark:text-orange-400">
+                  ⏭️ Bugun o'tkazib yuborildi
+                </p>
+              </div>
+            )}
+
+            <div className="flex gap-3">
+              <Button
+                size="lg"
+                className="flex-1 gap-2 h-14 text-base font-semibold bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 shadow-lg"
+                onClick={handleComplete}
+                disabled={completedToday === true || markDayMutation.isPending}
+                data-testid="button-complete"
+              >
+                <Check className="w-6 h-6" />
+                Bajarildi
+              </Button>
+              <Button
+                size="lg"
+                variant="outline"
+                className="flex-1 gap-2 h-14 text-base font-semibold border-2 hover:bg-muted"
+                onClick={handleSkip}
+                disabled={completedToday === false || markDayMutation.isPending}
+                data-testid="button-skip"
+              >
+                <X className="w-6 h-6" />
+                O'tkazish
+              </Button>
+            </div>
+          </motion.div>
 
           <div className="mt-8">
             <h3 className="text-lg font-semibold mb-4 text-foreground" data-testid="text-chart-heading">
