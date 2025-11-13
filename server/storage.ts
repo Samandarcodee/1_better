@@ -86,6 +86,10 @@ export class PostgresStorage implements IStorage {
           streak: 0,
           startDate: new Date(),
           completionData: {},
+          // Reminder defaults
+          reminderEnabled: false,
+          reminderTime: "09:00",
+          reminderTimezone: "Asia/Tashkent",
         })
         .returning();
 
@@ -198,6 +202,10 @@ export class PostgresStorage implements IStorage {
           ? dbRow.start_date
           : new Date(dbRow.startDate || dbRow.start_date || Date.now()),
         completionData: (dbRow.completionData || dbRow.completion_data || {}) as Record<string, boolean>,
+        // Reminder fields
+        reminderEnabled: dbRow.reminderEnabled ?? dbRow.reminder_enabled ?? false,
+        reminderTime: dbRow.reminderTime ?? dbRow.reminder_time ?? "09:00",
+        reminderTimezone: dbRow.reminderTimezone ?? dbRow.reminder_timezone ?? "Asia/Tashkent",
       };
       return habit;
     } catch (error) {
@@ -240,6 +248,10 @@ export class MemStorage implements IStorage {
       streak: 0,
       startDate: new Date(),
       completionData: {},
+      // Reminder defaults
+      reminderEnabled: false,
+      reminderTime: "09:00",
+      reminderTimezone: "Asia/Tashkent",
     };
     this.habits.set(id, habit);
     return habit;

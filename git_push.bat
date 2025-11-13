@@ -40,9 +40,12 @@ echo ✅ Fayllar qo'shildi
 echo.
 
 echo [4/6] Commit qilish...
-git commit -m "first commit"
+git commit -m "Add Telegram Push Notifications: Bot commands (/today, /stats, /remind), cron scheduler, daily reminders, streak protection, milestone notifications"
 if errorlevel 1 (
     echo ⚠️  Commit xatolik (ehtimol allaqachon commit qilingan)
+    echo.
+    echo Yangi commit yaratish...
+    git commit -m "Add Telegram Push Notifications: Bot commands, cron scheduler, reminders"
 ) else (
     echo ✅ Commit qilindi
 )

@@ -35,6 +35,9 @@ export const insertHabitSchema = createInsertSchema(habits).omit({
   streak: true,
   startDate: true,
   completionData: true,
+  reminderEnabled: true, // Optional - default false
+  reminderTime: true, // Optional - default "09:00"
+  reminderTimezone: true, // Optional - default "Asia/Tashkent"
 });
 
 // Frontend uchun schema (userId avtomatik qo'shiladi)
