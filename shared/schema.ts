@@ -7,6 +7,8 @@ export const habits = pgTable("habits", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
   userId: varchar("user_id", { length: 255 }).notNull(), // Telegram user ID
   name: text("name").notNull(),
+  description: text("description"), // Odat haqida qo'shimcha ma'lumot
+  icon: varchar("icon", { length: 10 }).default("🎯"), // Emoji icon
   isGoodHabit: boolean("is_good_habit").notNull().default(true),
   duration: integer("duration").notNull(),
   streak: integer("streak").notNull().default(0),

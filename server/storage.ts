@@ -81,6 +81,8 @@ export class PostgresStorage implements IStorage {
         .values({
           userId: insertHabit.userId,
           name: insertHabit.name,
+          description: insertHabit.description,
+          icon: insertHabit.icon || "🎯",
           isGoodHabit: insertHabit.isGoodHabit ?? true,
           duration: insertHabit.duration,
           streak: 0,
@@ -104,6 +106,8 @@ export class PostgresStorage implements IStorage {
     try {
       const updateData: any = {};
       if (updates.name !== undefined) updateData.name = updates.name;
+      if (updates.description !== undefined) updateData.description = updates.description;
+      if (updates.icon !== undefined) updateData.icon = updates.icon;
       if (updates.isGoodHabit !== undefined) updateData.isGoodHabit = updates.isGoodHabit;
       if (updates.duration !== undefined) updateData.duration = updates.duration;
       if (updates.streak !== undefined) updateData.streak = updates.streak;
@@ -193,6 +197,8 @@ export class PostgresStorage implements IStorage {
         id: dbRow.id,
         userId: dbRow.userId ?? dbRow.user_id,
         name: dbRow.name,
+        description: dbRow.description,
+        icon: dbRow.icon || "🎯",
         isGoodHabit: dbRow.isGoodHabit ?? dbRow.is_good_habit ?? true,
         duration: dbRow.duration,
         streak: dbRow.streak ?? 0,
@@ -243,6 +249,8 @@ export class MemStorage implements IStorage {
       id,
       userId: insertHabit.userId,
       name: insertHabit.name,
+      description: insertHabit.description,
+      icon: insertHabit.icon || "🎯",
       isGoodHabit: insertHabit.isGoodHabit ?? true,
       duration: insertHabit.duration,
       streak: 0,

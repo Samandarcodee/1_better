@@ -105,14 +105,27 @@ Agar `render.yaml` faylidan foydalanmoqchi bo'lsangiz:
 
 ## Xususiyatlar
 
-- ✅ Odatlarni qo'shish, o'chirish, tahrirlash
-- ✅ Kunlik bajarilganlikni belgilash
-- ✅ Streak (ketma-ketlik) hisoblash
-- ✅ Progress bar
-- ✅ Kalendar ko'rinishi
-- ✅ Telegram Mini App integratsiyasi
+### Core Features
+- ✅ **Odatlarni qo'shish, tahrirlash, o'chirish** - To'liq CRUD operatsiyalar
+- ✅ **Kunlik bajarilganlikni belgilash** - Har kun odatni belgilash
+- ✅ **Streak (ketma-ketlik) hisoblash** - Motivatsiya uchun streak counter
+- ✅ **Progress bar & visualization** - Progress ko'rsatkichlari
+- ✅ **Kalendar ko'rinishi** - Tarixiy ma'lumotlar
+- ✅ **Telegram Mini App** - Telegram ichida ishlaydi
+
+### 🆕 Yangi Xususiyatlar (v2.0)
+- ✨ **Emoji Icon tanlash** - 12 ta turli icon, har bir odat uchun
+- 📝 **Izoh (Description)** - Odat haqida batafsil ma'lumot (200 belgi)
+- ✏️ **Tahrirlash mode** - Mavjud odatlarni to'liq tahrirlash
+- 🗑️ **Xavfsiz o'chirish** - Tasdiqlash dialogi bilan
+- 💎 **Zamonaviy UI/UX** - Gradient dizayn, animatsiyalar
+- 📊 **Quick Stats** - Asosiy sahifada statistika
+- 🎨 **Enhanced Cards** - Yanada chiroyli habit card'lar
+
+### Security & Auth
 - ✅ **Foydalanuvchi autentifikatsiyasi (Telegram ID)**
 - ✅ **Har bir user o'z ma'lumotlarini ko'radi**
+- ✅ **User isolation** - Ma'lumotlar xavfsizligi
 
 ## Telegram Bot
 

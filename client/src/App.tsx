@@ -15,6 +15,7 @@ function Router() {
       <Route path="/" component={Home} />
       <Route path="/habit/:id" component={HabitDetail} />
       <Route path="/add" component={AddHabit} />
+      <Route path="/edit/:id" component={AddHabit} />
       <Route component={NotFound} />
     </Switch>
   );
