@@ -53,7 +53,7 @@ export default function HabitCard({
         <div className="flex items-center gap-2 mb-3">
           <span className="text-2xl" data-testid="icon-streak">🔥</span>
           <span className="text-base font-semibold text-foreground" data-testid="text-streak">
-            {streak} days
+            {streak} kun
           </span>
         </div>
 
