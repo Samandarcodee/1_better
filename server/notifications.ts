@@ -3,6 +3,7 @@ import { drizzle } from "drizzle-orm/neon-http";
 import { neon } from "@neondatabase/serverless";
 import { eq, and } from "drizzle-orm";
 import { habits, userSettings } from "@shared/schema";
+import { getMessageByTime, getStreakMessage, getRandomMessage } from "./motivational-messages";
 
 const BOT_TOKEN = "8300153631:AAFfdf9HexrQn8v1oqj9P93trhDFeIj1MQk";
 const TELEGRAM_API = `https://api.telegram.org/bot${BOT_TOKEN}`;
@@ -61,21 +62,29 @@ function getCurrentTime(timezone: string = "Asia/Tashkent"): string {
   return now.toLocaleTimeString("en-US", options);
 }
 
-// Send daily reminder
-async function sendDailyReminder(chatId: string, habit: any) {
+// Send daily reminder with motivational message
+async function sendDailyReminder(chatId: string, habit: any, customTime?: string) {
+  const hour = new Date().getHours();
+  const motivationalMsg = getMessageByTime(hour);
+  const streakMsg = getStreakMessage(habit.streak);
+  const randomMotivation = getRandomMessage('motivation');
+  
   const message = `
 ⏰ <b>Eslatma!</b>
 
-Bugun "<b>${habit.name}</b>" odatingizni bajarish vaqti keldi!
+${motivationalMsg}
 
-🔥 Hozirgi streak: ${habit.streak} kun
-💪 Davom eting va maqsadingizga yetib boring!
+📋 <b>Odat:</b> ${habit.name}
+${habit.description ? `💬 ${habit.description}\n` : ''}
+${streakMsg}
+
+${randomMotivation}
 
 📱 <i>Ilovani ochib, odatni belgilang</i>
   `.trim();
 
   await sendTelegramMessage(chatId, message);
-  console.log(`✅ Daily reminder sent for habit: ${habit.name} to chat: ${chatId}`);
+  console.log(`✅ Daily reminder sent for habit: ${habit.name} to chat: ${chatId} at ${customTime || 'default time'}`);
 }
 
 // Send streak protection reminder
@@ -158,18 +167,20 @@ async function checkAndSendReminders() {
           continue;
         }
 
-        // Check if it's time to send reminder
+        // Check if it's time to send reminder (support multiple reminder times)
         const currentTime = getCurrentTime(habit.reminderTimezone || settings.timezone || "Asia/Tashkent");
-        const reminderTime = habit.reminderTime || "09:00";
+        const reminderTimes = habit.reminderTime ? habit.reminderTime.split(',') : ["09:00"];
 
-        // Check if current time matches reminder time (within 1 minute window)
-        const [currentHour, currentMinute] = currentTime.split(":").map(Number);
-        const [reminderHour, reminderMinute] = reminderTime.split(":").map(Number);
+        // Check each reminder time
+        for (const reminderTime of reminderTimes) {
+          const [currentHour, currentMinute] = currentTime.split(":").map(Number);
+          const [reminderHour, reminderMinute] = reminderTime.trim().split(":").map(Number);
 
-        if (currentHour === reminderHour && currentMinute === reminderMinute) {
-          // Check if today is already completed
-          if (!isTodayCompleted(habit.completionData as Record<string, boolean>)) {
-            await sendDailyReminder(settings.chatId, habit);
+          if (currentHour === reminderHour && currentMinute === reminderMinute) {
+            // Check if today is already completed
+            if (!isTodayCompleted(habit.completionData as Record<string, boolean>)) {
+              await sendDailyReminder(settings.chatId, habit, reminderTime);
+            }
           }
         }
 

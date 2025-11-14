@@ -1,7 +1,18 @@
 import { useState, useEffect } from "react";
 import { useRoute, useLocation } from "wouter";
-import { ArrowLeft, Check, X } from "lucide-react";
+import { ArrowLeft, Check, X, Edit2, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
 import StreakCounter from "@/components/StreakCounter";
 import CircularProgress from "@/components/CircularProgress";
 import HabitCalendar from "@/components/HabitCalendar";
@@ -50,6 +61,25 @@ export default function HabitDetail() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/habits", habitId] });
       queryClient.invalidateQueries({ queryKey: ["/api/habits"] });
+    },
+  });
+
+  const deleteHabitMutation = useMutation({
+    mutationFn: async () => {
+      return apiRequest("DELETE", `/api/habits/${habitId}`, {});
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/habits"] });
+      toast({
+        description: "Odat o'chirildi ✅",
+      });
+      setLocation("/");
+    },
+    onError: () => {
+      toast({
+        description: "Xatolik yuz berdi",
+        variant: "destructive",
+      });
     },
   });
 
@@ -199,14 +229,71 @@ export default function HabitDetail() {
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.4 }}
         >
-          {/* Habit Name with emoji */}
+          {/* Habit Name with description and actions */}
           <div className="text-center mb-6">
             <h2 className="text-3xl font-bold text-foreground mb-2" data-testid="text-habit-name">
               {habit.name}
             </h2>
-            <p className="text-sm text-muted-foreground">
+            {habit.description && (
+              <p className="text-base text-muted-foreground mb-3 max-w-md mx-auto">
+                {habit.description}
+              </p>
+            )}
+            <p className="text-sm text-muted-foreground mb-4">
               {habit.duration} kunlik sayohat
             </p>
+            
+            {/* Edit and Delete buttons */}
+            <div className="flex gap-2 justify-center">
+              <Button
+                variant="outline"
+                size="sm"
+                className="gap-2"
+                onClick={() => {
+                  webApp.HapticFeedback.impactOccurred("light");
+                  // TODO: Implement edit page
+                  toast({
+                    description: "Tahrirlash funksiyasi tez orada...",
+                  });
+                }}
+              >
+                <Edit2 className="w-4 h-4" />
+                Tahrirlash
+              </Button>
+              
+              <AlertDialog>
+                <AlertDialogTrigger asChild>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="gap-2 text-red-600 hover:text-red-700 hover:bg-red-50"
+                  >
+                    <Trash2 className="w-4 h-4" />
+                    O'chirish
+                  </Button>
+                </AlertDialogTrigger>
+                <AlertDialogContent>
+                  <AlertDialogHeader>
+                    <AlertDialogTitle>Odatni o'chirish</AlertDialogTitle>
+                    <AlertDialogDescription>
+                      Haqiqatan ham bu odatni o'chirmoqchimisiz? Bu amalni bekor qilib bo'lmaydi va barcha ma'lumotlar yo'qoladi.
+                    </AlertDialogDescription>
+                  </AlertDialogHeader>
+                  <AlertDialogFooter>
+                    <AlertDialogCancel>Bekor qilish</AlertDialogCancel>
+                    <AlertDialogAction
+                      onClick={() => {
+                        webApp.HapticFeedback.notificationOccurred("warning");
+                        deleteHabitMutation.mutate();
+                      }}
+                      className="bg-red-600 hover:bg-red-700"
+                    >
+                      O'chirish
+                    </AlertDialogAction>
+                  </AlertDialogFooter>
+                </AlertDialogContent>
+              </AlertDialog>
+            </div>
           </div>
 
           {/* Streak Counter */}
