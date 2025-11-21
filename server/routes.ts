@@ -257,6 +257,24 @@ Pastdagi menu tugmasini bosing yoki /start buyrug'idagi tugmani bosing.`;
       method: "POST"
     });
   });
+
+  // Manual trigger for notifications (for testing)
+  app.post("/api/notifications/trigger", async (req, res) => {
+    try {
+      const { triggerRemindersManually } = await import("./notifications");
+      await triggerRemindersManually();
+      res.json({ 
+        status: "ok", 
+        message: "Notifications triggered successfully"
+      });
+    } catch (error) {
+      console.error("❌ Error triggering notifications:", error);
+      res.status(500).json({ 
+        error: "Failed to trigger notifications",
+        message: error instanceof Error ? error.message : "Unknown error"
+      });
+    }
+  });
   app.get("/api/habits", requireAuth, async (req, res) => {
     try {
       const userId = (req as any).userId;
