@@ -146,6 +146,11 @@ async function checkAndSendReminders() {
 
     console.log(`⏰ Checking reminders for ${allHabits.length} habits...`);
 
+    if (allHabits.length === 0) {
+      console.log(`ℹ️ No habits with reminders enabled found`);
+      return;
+    }
+
     for (const habit of allHabits) {
       try {
         // Get user settings
@@ -164,6 +169,7 @@ async function checkAndSendReminders() {
 
         // Check if notifications are enabled
         if (!settings.notificationsEnabled) {
+          console.log(`🔕 Notifications disabled for user: ${habit.userId}`);
           continue;
         }
 
@@ -179,7 +185,10 @@ async function checkAndSendReminders() {
           if (currentHour === reminderHour && currentMinute === reminderMinute) {
             // Check if today is already completed
             if (!isTodayCompleted(habit.completionData as Record<string, boolean>)) {
+              console.log(`📨 Sending reminder for habit "${habit.name}" to user ${habit.userId} at ${reminderTime}`);
               await sendDailyReminder(settings.chatId, habit, reminderTime);
+            } else {
+              console.log(`✅ Habit "${habit.name}" already completed today - skipping reminder`);
             }
           }
         }
@@ -212,9 +221,13 @@ async function checkAndSendReminders() {
 // Initialize notification scheduler
 export function initializeNotificationScheduler() {
   console.log("🔔 Initializing notification scheduler...");
+  console.log(`⏰ Current time: ${getCurrentTime()}`);
+  console.log(`📍 Timezone: Asia/Tashkent`);
 
   // Run every minute
   cron.schedule("* * * * *", async () => {
+    const currentTime = getCurrentTime();
+    console.log(`\n⏰ [${currentTime}] Checking reminders...`);
     await checkAndSendReminders();
   });
 

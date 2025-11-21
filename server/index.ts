@@ -94,10 +94,8 @@ app.use((req, res, next) => {
   }, () => {
     log(`serving on port ${port}`);
     
-    // Initialize notification scheduler in production
-    if (app.get("env") === "production") {
-      initializeNotificationScheduler();
-      log("🔔 Notification scheduler started");
-    }
+    // Initialize notification scheduler in all environments
+    initializeNotificationScheduler();
+    log("🔔 Notification scheduler started (" + app.get("env") + " mode)");
   });
 })();
